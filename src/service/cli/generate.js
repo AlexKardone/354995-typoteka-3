@@ -1,11 +1,7 @@
 'use strict';
 
 const fs = require(`fs`);
-const {
-  getRandomInt,
-  shuffle,
-  formatDate,
-} = require(`../../utils`);
+const Utils = require(`../../utils`);
 
 const DEFAULT_COUNT = 1;
 const FILE_NAME = `mocks.json`;
@@ -15,7 +11,7 @@ const MAX_PUBLICATIONS = 1000;
 const CURRENT_DATE = Date.now();
 const ONE_MONTH_UNIX = 2670658033;
 
-const dates = {
+const Dates = {
   MIN: CURRENT_DATE - (ONE_MONTH_UNIX * 3),
   MAX: CURRENT_DATE,
 };
@@ -70,22 +66,22 @@ const CATEGORIES = [
   `Железо`,
 ];
 
-function createRandomFullText(sentencesArray) {
-  let text = [];
+const createRandomFullText = (sentencesArray) => {
+  const text = [];
   for (let i = 0; i < sentencesArray.length; i += 1) {
-    text.push(sentencesArray[getRandomInt(0, SENTENCES.length - 1)]);
+    text.push(sentencesArray[Utils.getRandomInt(0, SENTENCES.length - 1)]);
   }
 
   return text.join(` `);
-}
+};
 
 const generateOffers = (count) => (
   Array(count).fill({}).map(() => ({
-    title: TITLES[getRandomInt(0, TITLES.length - 1)],
-    announce: shuffle(SENTENCES).slice(0, getRandomInt(1, 6)).join(` `),
+    title: TITLES[Utils.getRandomInt(0, TITLES.length - 1)],
+    announce: Utils.shuffle(SENTENCES).slice(0, Utils.getRandomInt(1, 6)).join(` `),
     fullText: createRandomFullText(SENTENCES),
-    createdDate: formatDate(new Date(getRandomInt(dates.MIN, dates.MAX))),
-    category: shuffle(CATEGORIES).slice(0, getRandomInt(1, CATEGORIES.length)),
+    createdDate: Utils.formatDate(new Date(Utils.getRandomInt(Dates.MIN, Dates.MAX))),
+    category: Utils.shuffle(CATEGORIES).slice(0, Utils.getRandomInt(1, CATEGORIES.length)),
   }))
 );
 
