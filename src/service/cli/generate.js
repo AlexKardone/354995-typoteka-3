@@ -1,7 +1,8 @@
 'use strict';
 
-const fs = require(`fs`);
+const fs = require(`fs`).promises;
 const Utils = require(`../../utils`);
+const chalk = require(`chalk`);
 
 const DEFAULT_COUNT = 1;
 const FILE_NAME = `mocks.json`;
@@ -87,23 +88,22 @@ const generateOffers = (count) => (
 
 module.exports = {
   name: `--generate`,
-  run(args) {
+  async run(args) {
     const [count] = args;
     const countPublications = Number.parseInt(count, 10) || DEFAULT_COUNT;
 
     if (countPublications > MAX_PUBLICATIONS) {
-      console.error(`Не больше ${MAX_PUBLICATIONS} публикаций.`);
+      console.error(chalk.red(`Не больше ${MAX_PUBLICATIONS} публикаций.`));
       return;
     }
 
     const content = JSON.stringify(generateOffers(countPublications));
 
-    fs.writeFile(FILE_NAME, content, (err) => {
-      if (err) {
-        return console.error(`Can't write data to file...`);
-      }
-
-      return console.info(`Operation success. File created.`);
-    });
+    try {
+      await fs.writeFile(FILE_NAME, content);
+      console.info(chalk.green(`Operation success. File created.`));
+    } catch (err) {
+      console.error(chalk.red(`Can't write data to file...`));
+    }
   }
 };
