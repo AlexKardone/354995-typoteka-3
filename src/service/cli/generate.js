@@ -18,9 +18,11 @@ const Dates = {
   MAX: CURRENT_DATE,
 };
 
-const FILE_SENTENCES_PATH = `./data/sentences.txt`;
-const FILE_TITLES_PATH = `./data/titles.txt`;
-const FILE_CATEGORIES_PATH = `./data/categories.txt`;
+const FilePath = {
+  SENTENCES: `./data/sentences.txt`,
+  TITLES: `./data/titles.txt`,
+  CATEGORIES: `./data/categories.txt`,
+};
 
 const createRandomFullText = (sentencesArray) => {
   const text = [];
@@ -31,35 +33,32 @@ const createRandomFullText = (sentencesArray) => {
   return text.join(` `);
 };
 
-const readContent = async (filePath) => {
-  const content = await fs.readFile(filePath, `utf8`);
-  return content.trim().split(`\n`);
+const readContent = async (filePath) => { // eslint-disable-line consistent-return
+  try {
+    const content = await fs.readFile(filePath, `utf8`);
+    return content.trim().split(`\n`);
+  } catch (err) {
+    console.error(chalk.red(err));
+    process.exit(ExitCode.FAIL);
+  }
 };
 
-const generatePublications = (count, textData) => (
+const generatePublications = (count, sentences, titles, categories) => (
   Array(count).fill({}).map(() => ({
-    title: textData.titles[Utils.getRandomInt(0, textData.titles.length - 1)],
-    announce: Utils.shuffle(textData.sentences).slice(0, Utils.getRandomInt(1, 6)).join(` `),
-    fullText: createRandomFullText(textData.sentences),
+    title: titles[Utils.getRandomInt(0, titles.length - 1)],
+    announce: Utils.shuffle(sentences).slice(0, Utils.getRandomInt(1, 6)).join(` `),
+    fullText: createRandomFullText(sentences),
     createdDate: Utils.formatDate(new Date(Utils.getRandomInt(Dates.MIN, Dates.MAX))),
-    category: Utils.shuffle(textData.categories).slice(0, Utils.getRandomInt(1, textData.categories.length)),
+    category: Utils.shuffle(categories).slice(0, Utils.getRandomInt(1, categories.length)),
   }))
 );
 
 module.exports = {
   name: `--generate`,
   async run(args) {
-    const textData = {};
-
-    try {
-      textData.sentences = await readContent(FILE_SENTENCES_PATH);
-      textData.titles = await readContent(FILE_TITLES_PATH);
-      textData.categories = await readContent(FILE_CATEGORIES_PATH);
-    } catch (err) {
-      console.error(chalk.red(err));
-      process.exit(ExitCode.FAIL);
-      return;
-    }
+    const [sentences, titles, categories] = await Promise.all([
+      readContent(FilePath.SENTENCES), readContent(FilePath.TITLES), readContent(FilePath.CATEGORIES),
+    ]);
 
     const [count] = args;
     const countPublications = Number.parseInt(count, 10) || DEFAULT_COUNT;
@@ -67,10 +66,9 @@ module.exports = {
     if (countPublications > MAX_PUBLICATIONS) {
       console.error(chalk.red(`Не больше ${MAX_PUBLICATIONS} публикаций.`));
       process.exit(ExitCode.FAIL);
-      return;
     }
 
-    const content = JSON.stringify(generatePublications(countPublications, textData));
+    const content = JSON.stringify(generatePublications(countPublications, sentences, titles, categories));
 
     try {
       await fs.writeFile(FILE_NAME, content);
