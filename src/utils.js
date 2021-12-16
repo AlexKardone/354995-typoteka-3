@@ -1,5 +1,9 @@
 'use strict';
 
+const {nanoid} = require(`nanoid`);
+
+const {MAX_ID_LENGTH} = require(`./constants`);
+
 class Utils {
   static getRandomInt(min, max) {
     min = Math.ceil(min);
@@ -20,6 +24,19 @@ class Utils {
   static formatDate(date) {
     const dateISO = date.toISOString().split(`T`);
     return `${dateISO[0]} ${dateISO[1].split(`.`)[0]}`;
+  }
+
+  static getRandomArrayPart(arr) {
+    return arr.slice(this.getRandomInt(0, (arr.length - 1) / 2), this.getRandomInt((arr.length - 1) / 2, arr.length - 1));
+  }
+
+  static generateComments(count, comments) {
+    return (
+      Array(count).fill({}).map(() => ({
+        id: nanoid(MAX_ID_LENGTH),
+        text: this.getRandomArrayPart(this.shuffle(comments)).join(` `),
+      }))
+    );
   }
 }
 
