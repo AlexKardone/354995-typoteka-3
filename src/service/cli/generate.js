@@ -3,12 +3,14 @@
 const fs = require(`fs`).promises;
 const Utils = require(`../../utils`);
 const chalk = require(`chalk`);
-const {ExitCode} = require(`../../constants`);
+const {MAX_ID_LENGTH, ExitCode} = require(`../../constants`);
+const {nanoid} = require(`nanoid`);
 
 const DEFAULT_COUNT = 1;
 const FILE_NAME = `mocks.json`;
 
 const MAX_PUBLICATIONS = 1000;
+const MAX_COMMENTS = 4;
 
 const CURRENT_DATE = Date.now();
 const ONE_MONTH_UNIX = 2670658033;
@@ -22,6 +24,7 @@ const FilePath = {
   SENTENCES: `./data/sentences.txt`,
   TITLES: `./data/titles.txt`,
   CATEGORIES: `./data/categories.txt`,
+  COMMENTS: `./data/comments.txt`,
 };
 
 const createRandomFullText = (sentencesArray) => {
@@ -43,21 +46,24 @@ const readContent = async (filePath) => { // eslint-disable-line consistent-retu
   }
 };
 
-const generatePublications = (count, sentences, titles, categories) => (
+const generatePublications = (count, [sentences, titles, categories, comments]) => (
   Array(count).fill({}).map(() => ({
     title: titles[Utils.getRandomInt(0, titles.length - 1)],
     announce: Utils.shuffle(sentences).slice(0, Utils.getRandomInt(1, 6)).join(` `),
     fullText: createRandomFullText(sentences),
     createdDate: Utils.formatDate(new Date(Utils.getRandomInt(Dates.MIN, Dates.MAX))),
-    category: Utils.shuffle(categories).slice(0, Utils.getRandomInt(1, categories.length)),
+    category: Utils.getRandomArrayPart(categories),
+    id: nanoid(MAX_ID_LENGTH),
+    comments: Utils.generateComments(MAX_COMMENTS, comments),
   }))
 );
 
 module.exports = {
   name: `--generate`,
   async run(args) {
-    const [sentences, titles, categories] = await Promise.all([
-      readContent(FilePath.SENTENCES), readContent(FilePath.TITLES), readContent(FilePath.CATEGORIES),
+    const data = await Promise.all([
+      readContent(FilePath.SENTENCES), readContent(FilePath.TITLES),
+      readContent(FilePath.CATEGORIES), readContent(FilePath.COMMENTS),
     ]);
 
     const [count] = args;
@@ -68,7 +74,7 @@ module.exports = {
       process.exit(ExitCode.FAIL);
     }
 
-    const content = JSON.stringify(generatePublications(countPublications, sentences, titles, categories));
+    const content = JSON.stringify(generatePublications(countPublications, data));
 
     try {
       await fs.writeFile(FILE_NAME, content);
