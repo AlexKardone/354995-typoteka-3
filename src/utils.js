@@ -38,6 +38,15 @@ class Utils {
       }))
     );
   }
+
+  static getRandomDate() {
+    const today = Date.now();
+    const threeMonthAgo = today - 1000 * 60 * 60 * 24 * 3;
+    const randomDate = this.getRandomInt(threeMonthAgo, today);
+    const randomDateObject = new Date(randomDate);
+    const humanDateFormat = randomDateObject.toLocaleString();
+    return humanDateFormat;
+  };
 }
 
 module.exports = Utils;

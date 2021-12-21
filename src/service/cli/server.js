@@ -2,7 +2,7 @@
 
 const chalk = require(`chalk`);
 const express = require(`express`);
-const {HttpCode, API_PREFIX} = require(`../../constants`);
+const {ExitCode, HttpCode, API_PREFIX} = require(`../../constants`);
 
 const DEFAULT_PORT = 3000;
 
@@ -32,7 +32,7 @@ module.exports = {
       });
     } catch (err) {
       console.error(`Произошла ошибка: ${err.message}`);
-      process.exit(1);
+      process.exit(ExitCode.ERROR);
     }
   }
 };

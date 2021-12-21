@@ -2,7 +2,7 @@
 
 const {nanoid} = require(`nanoid`);
 const {MAX_ID_LENGTH} = require(`../../constants`);
-const {getRandomDate} = require(`../../utils`);
+const Utils = require(`../../utils`);
 
 class ArticleService {
   constructor(articles) {
@@ -11,7 +11,7 @@ class ArticleService {
 
   create(article) {
     const newArticle = Object
-      .assign({id: nanoid(MAX_ID_LENGTH), createDate: getRandomDate(), comments: []}, article);
+      .assign({id: nanoid(MAX_ID_LENGTH), createDate: Utils.getRandomDate(), comments: []}, article);
 
     this._articles.push(newArticle);
     return newArticle;
