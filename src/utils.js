@@ -46,7 +46,7 @@ class Utils {
     const randomDateObject = new Date(randomDate);
     const humanDateFormat = randomDateObject.toLocaleString();
     return humanDateFormat;
-  };
+  }
 }
 
 module.exports = Utils;
