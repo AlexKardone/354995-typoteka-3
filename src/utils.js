@@ -27,7 +27,10 @@ class Utils {
   }
 
   static getRandomArrayPart(arr) {
-    return arr.slice(this.getRandomInt(0, (arr.length - 1) / 2), this.getRandomInt((arr.length - 1) / 2, arr.length - 1));
+    return arr.slice(
+        this.getRandomInt(0, (arr.length - 1) / 2),
+        this.getRandomInt((arr.length - 1) / 2, arr.length - 1)
+    ).slice(0, 3);
   }
 
   static generateComments(count, comments) {
