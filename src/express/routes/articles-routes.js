@@ -9,7 +9,7 @@ const {nanoid} = require(`nanoid`);
 const UPLOAD_DIR = `../upload/img/`;
 const uploadDirAbsolute = path.resolve(__dirname, UPLOAD_DIR);
 
-const articlesRouter = new Router();
+const articlesRoutes = new Router();
 
 const storage = multer.diskStorage({
   destination: uploadDirAbsolute,
@@ -22,20 +22,20 @@ const storage = multer.diskStorage({
 
 const upload = multer({storage});
 
-articlesRouter.get(`/category/:id`, (req, res) => res.render(`articles/articles-by-category`));
+articlesRoutes.get(`/category/:id`, (req, res) => res.render(`articles-by-category`));
 
-articlesRouter.get(`/add`, async (req, res) => {
+articlesRoutes.get(`/add`, async (req, res) => {
   const categories = await api.getCategories();
   res.render(`new-post`, {categories});
 });
 
-articlesRouter.post(`/add`, upload.single(`upload`), async (req, res) => {
+articlesRoutes.post(`/add`, upload.single(`upload`), async (req, res) => {
   const {body, file} = req;
   const articleData = {
     title: body.title,
     announce: body.announcement,
     fullText: body.fullText,
-    category: Array.isArray(body.category) ? body.category : [body.category]
+    categories: Array.isArray(body.categories) ? body.categories : [body.categories]
   };
 
   if (file) {
@@ -50,13 +50,13 @@ articlesRouter.post(`/add`, upload.single(`upload`), async (req, res) => {
   }
 });
 
-articlesRouter.get(`/edit/:id`, async (req, res) => {
+articlesRoutes.get(`/edit/:id`, async (req, res) => {
   const {id} = req.params;
   const [article, categories] = await Promise.all([api.getArticle(id), api.getCategories()]);
   res.render(`edit-post`, {article, categories});
 });
 
-articlesRouter.post(`/edit/:id`, upload.single(`upload`), async (req, res) => {
+articlesRoutes.post(`/edit/:id`, upload.single(`upload`), async (req, res) => {
   const {body, file} = req;
   const {id} = req.params;
   const article = await api.getArticle(id);
@@ -65,7 +65,7 @@ articlesRouter.post(`/edit/:id`, upload.single(`upload`), async (req, res) => {
     title: body.title,
     announce: body.announcement,
     fullText: body.fullText,
-    category: Array.isArray(body.category) ? body.category : [body.category]
+    categories: Array.isArray(body.categories) ? body.categories : [body.categories]
   };
 
   if (file) {
@@ -83,6 +83,11 @@ articlesRouter.post(`/edit/:id`, upload.single(`upload`), async (req, res) => {
   }
 });
 
-articlesRouter.get(`/:id`, (req, res) => res.render(`articles/post-detail`));
+articlesRoutes.get(`/:id`, async (req, res) => {
+  const {id} = req.params;
+  const article = await api.getArticle(id, true);
 
-module.exports = articlesRouter;
+  res.render(`post`, {article});
+});
+
+module.exports = articlesRoutes;
