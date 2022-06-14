@@ -15,39 +15,39 @@ class API {
     });
   }
 
-  getArticles() {
-    return this._load(`/articles`);
+  async _load(url, options) {
+    const response = await this._http.request({url, ...options});
+    return response.data;
   }
 
-  getArticle(id) {
-    return this._load(`/articles/${id}`);
+  getArticles({comments}) {
+    return this._load(`/articles`, {params: {comments}});
+  }
+
+  getArticle(id, comments) {
+    return this._load(`/articles/${id}`, {params: {comments}});
   }
 
   search(query) {
     return this._load(`/search`, {params: {query}});
   }
 
-  async getCategories() {
-    return this._load(`/categories`);
+  getCategories(count) {
+    return this._load(`/categories`, {params: {count}});
   }
 
-  async createArticle(data) {
+  createArticle(data) {
     return this._load(`/articles`, {
       method: `POST`,
       data
     });
   }
 
-  async updateArticle(data, id) {
+  updateArticle(data, id) {
     return this._load(`/articles/${id}`, {
       method: `PUT`,
       data
     });
-  }
-
-  async _load(url, options) {
-    const response = await this._http.request({url, ...options});
-    return response.data;
   }
 }
 
