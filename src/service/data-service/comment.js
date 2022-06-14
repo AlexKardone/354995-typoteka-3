@@ -1,30 +1,72 @@
 'use strict';
 
-const {nanoid} = require(`nanoid`);
-const {MAX_ID_LENGTH} = require(`../../constants`);
+const Aliase = require(`../models/aliase`);
 
 class CommentService {
-  create(article, comment) {
-    const newComment = Object
-      .assign({id: nanoid(MAX_ID_LENGTH)}, comment);
+  constructor(sequelize) {
+    this._Article = sequelize.models.Article;
+    this._Comment = sequelize.models.Comment;
+    this._User = sequelize.models.User;
+  }
 
-    article.comments.push(newComment);
+  async create(articleId, comment) {
+    const createdComment = await this._Comment.create({articleId, ...comment});
+    const newComment = await this._Comment.findOne({
+      where: {id: createdComment.id},
+      include: [
+        {
+          model: this._User,
+          as: Aliase.USERS,
+          attributes: {
+            exclude: [`passwordHash`]
+          }
+        }
+      ]
+    });
     return newComment;
   }
 
-  delete(article, commentId) {
-    const deleteComment = article.comments.find((item) => item.id === commentId);
+  async delete(id) {
+    const deletedRows = await this._Comment.destroy({
+      where: {id}
+    });
 
-    if (!deleteComment) {
-      return null;
-    }
-
-    article.comments = article.comments.filter((item) => item.id !== commentId);
-    return deleteComment;
+    return !!deletedRows;
   }
 
-  findAll(article) {
-    return article.comments;
+  async findAll(articleId) {
+    const comments = await this._Comment.findAll({
+      where: {articleId},
+      raw: true
+    });
+    return comments;
+  }
+
+  async findAllComments() {
+    const queryParams = {
+      include: [
+        {
+          model: this._User,
+          as: Aliase.USERS,
+          attributes: {
+            exclude: [`passwordHash`]
+          }
+        },
+        {
+          model: this._Article,
+          as: Aliase.ARTICLES,
+          attributes: {
+            exclude: [`announce`, `fullText`, `photo`, `userId`, `createdAt`, `updatedAt`]
+          }
+        }
+      ],
+      order: [
+        [`createdAt`, `DESC`]
+      ]
+    };
+
+    const comments = await this._Comment.findAll(queryParams);
+    return comments;
   }
 }
 
